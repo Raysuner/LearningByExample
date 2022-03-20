@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>drop</title>
+    <style>
+      .drag-area {
+        margin: 0 auto;
+        width: 80%;
+        height: 50px;
+        padding: 10px;
+        background-color: lightskyblue;
+        margin-bottom: 10px;
+      }
+      .draggable {
+        margin: 0 auto;
+        text-align: center;
+        background-color: #d8d8d8;
+        width: 40%;
+        height: 50px;
+        line-height: 50px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="drag-area">
+      <div class="draggable" draggable="true">hello world!</div>
+    </div>
+    <div class="drag-area"></div>
+    <div class="drag-area"></div>
+  </body>
+  <script>
+    let dragElem = null
+
+    document.addEventListener('drag', (evt) => {
+      console.log('drag', evt)
+      console.log('在拽了哦!')
+    })
+
+    document.addEventListener('dragstart', (evt) => {
+      console.log('dragstart', evt)
+      dragElem = evt.target
+      evt.target.style.opacity = 0.5
+    })
+
+    document.addEventListener('dragenter', (evt) => {
+      if (evt.target.className === 'drag-area') {
+        evt.target.style.background = 'aqua'
+      }
+    })
+
+    document.addEventListener('dragover', (evt) => {
+      evt.preventDefault() // 必须要有的操作
+    })
+
+    document.addEventListener('dragleave', (evt) => {
+      evt.target.style.background = ''
+    })
+
+    document.addEventListener('dragend', (evt) => {
+      dragElem.style.opacity = ''
+      console.log('dragend', evt)
+    })
+
+    document.addEventListener('drop', (evt) => {
+      console.log('drop', evt)
+      evt.preventDefault()
+      if (evt.target.className === 'drag-area') {
+        dragElem.parentNode.removeChild(dragElem)
+        evt.target.appendChild(dragElem)
+        evt.target.style.background = ''
+      }
+    })
+  </script>
+</html>
