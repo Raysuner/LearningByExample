@@ -5,57 +5,58 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta http-equiv="X-UA-Compatible" content="ie=edge" />
     <title>Document</title>
+    <style>
+      .file-upload {
+        max-width: 1080px;
+        margin: 0 atuo;
+      }
+      .dropbox {
+        margin-top: 10px;
+        width: 600px;
+        height: 250px;
+        border: 5px solid lightskyblue;
+      }
+    </style>
   </head>
   <body>
-    <form>
+    <div class="file-upload">
+      <h2>图片文件的上传</h2>
       <label>
         FormData:
-        <input class="form-data" type="file" multiple />
+        <input class="form-data" type="file" multiple accept="image/*" />
       </label>
       <label>
         Base64:
-        <input class="base64" type="file" multiple />
+        <input class="base64" type="file" multiple accept="image/*" />
       </label>
-    </form>
+      <br />
+      <br />
+      拖拽图片文件(base64):
+      <div class="dropbox"></div>
+    </div>
   </body>
   <script>
     const formDataElem = document.querySelector('.form-data')
     const base64Elem = document.querySelector('.base64')
+    const dropElem = document.querySelector('.dropbox')
 
     function changeFileToBase64(file) {
       return new Promise((resolve, reject) => {
         const fr = new FileReader() // 每次创建FileReader，为了处理多个文件上传的情况
-        fr.onloadend = (evt) => {
-          // 先绑定loadend事件，后读取文件信息，注意顺序
-          resolve(evt.target.result)
-        }
+        fr.addEventListener('loadend', (evt) => {
+          resolve(evt.target.result) // 先绑定loadend事件，后读取文件信息，注意顺序
+        })
         fr.readAsDataURL(file)
       })
     }
 
-    formDataElem.onchange = () => {
-      const myForm = new FormData() // 创建一个空的FormData对象
-      const files = formDataElem.files
-
-      Array.from(files).forEach((file) => {
-        myForm.append('files', file)
-      })
-
-      if (typeof window.fetch === 'function') {
-        window
-          .fetch('http://localhost:8080/formDataUpload', {
-            method: 'POST',
-            body: myForm
-          })
-          .then((res) => res.json())
-          .then(console.log)
-          .catch(console.error)
-      }
-    }
-
-    base64Elem.onchange = (evt) => {
-      const fileList = Array.from(base64Elem.files)
-      fileList.forEach(async file => {
+    function uploadFiles(fileList) {
+      fileList.forEach(async (file) => {
+        const imgType = /^image\//
+        if (!imgType.test(file.type)) {
+          console.error('文件不是图片类型')
+          return
+        }
         const base64Data = await changeFileToBase64(file)
         if (typeof window.fetch === 'function') {
           window
@@ -75,5 +76,53 @@
         }
       })
     }
+
+    formDataElem.addEventListener('change', (evt) => {
+      const myForm = new FormData() // 创建一个空的FormData对象
+      const files = formDataElem.files
+
+      Array.from(files).forEach((file) => {
+        const imgType = /^image\//
+        if (!imgType.test(file.type)) {
+          console.error('文件不是图片类型')
+          return
+        }
+        myForm.append('files', file)
+      })
+
+      if (typeof window.fetch === 'function') {
+        window
+          .fetch('http://localhost:8080/formDataUpload', {
+            method: 'POST',
+            body: myForm
+          })
+          .then((res) => res.json())
+          .then(console.log)
+          .catch(console.error)
+      }
+    })
+
+    base64Elem.addEventListener('change', (evt) => {
+      const fileList = Array.from(base64Elem.files)
+      uploadFiles(fileList)
+    })
+
+    dropElem.addEventListener('dragenter', (evt) => {
+      evt.preventDefault()
+      evt.stopPropagation()
+    })
+
+    dropElem.addEventListener('dragover', (evt) => {
+      evt.preventDefault()
+      evt.stopPropagation()
+    })
+
+    dropElem.addEventListener('drop', (evt) => {
+      evt.preventDefault()
+      evt.stopPropagation()
+      const dt = evt.dataTransfer
+      const files = dt.files
+      uploadFiles(Array.from(files))
+    })
   </script>
 </html>
