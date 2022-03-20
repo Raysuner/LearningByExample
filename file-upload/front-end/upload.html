@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <title>Document</title>
+  </head>
+  <body>
+    <form>
+      <label>
+        FormData:
+        <input class="form-data" type="file" multiple />
+      </label>
+      <label>
+        Base64:
+        <input class="base64" type="file" multiple />
+      </label>
+    </form>
+  </body>
+  <script>
+    const formDataElem = document.querySelector('.form-data')
+    const base64Elem = document.querySelector('.base64')
+
+    function changeFileToBase64(file) {
+      return new Promise((resolve, reject) => {
+        const fr = new FileReader() // 每次创建FileReader，为了处理多个文件上传的情况
+        fr.onloadend = (evt) => {
+          // 先绑定loadend事件，后读取文件信息，注意顺序
+          resolve(evt.target.result)
+        }
+        fr.readAsDataURL(file)
+      })
+    }
+
+    formDataElem.onchange = () => {
+      const myForm = new FormData() // 创建一个空的FormData对象
+      const files = formDataElem.files
+
+      Array.from(files).forEach((file) => {
+        myForm.append('files', file)
+      })
+
+      if (typeof window.fetch === 'function') {
+        window
+          .fetch('http://localhost:8080/formDataUpload', {
+            method: 'POST',
+            body: myForm
+          })
+          .then((res) => res.json())
+          .then(console.log)
+          .catch(console.error)
+      }
+    }
+
+    base64Elem.onchange = (evt) => {
+      const fileList = Array.from(base64Elem.files)
+      fileList.forEach(async file => {
+        const base64Data = await changeFileToBase64(file)
+        if (typeof window.fetch === 'function') {
+          window
+            .fetch('http://localhost:8080/base64Upload', {
+              method: 'POST',
+              body: JSON.stringify({
+                fileData: encodeURIComponent(base64Data),
+                fileName: file.name
+              }),
+              headers: {
+                'Content-Type': 'application/x-www-form-urlencoded'
+              }
+            })
+            .then((res) => res.json())
+            .then(console.log)
+            .catch(console.error)
+        }
+      })
+    }
+  </script>
+</html>
