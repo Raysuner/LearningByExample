@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>pdf-preview</title>
+  <style>
+    .container {
+      display: flex;
+    }
+    .left {
+      width: 20%;
+    }
+    .right {
+      width: 80%;
+    }
+    .viewer {
+      width: 100%;
+      height: 100vh;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="left">
+      <input class="input-file" type="file" />
+    </div>
+    <div class="right">
+      <iframe class="viewer" frameborder="0"></iframe>
+    </div>
+  </div>
+</body>
+<script>
+  const inputFile = document.querySelector('.input-file')
+  const pdfViewer = document.querySelector('.viewer')
+
+  inputFile.addEventListener('change', evt => {
+    console.log('evt', evt)
+    const file = evt.target.files[0]
+    const fileUrl = window.URL.createObjectURL(file)
+    pdfViewer.src = fileUrl
+    window.URL.revokeObjectURL(fileUrl)
+  })
+</script>
+</html>
