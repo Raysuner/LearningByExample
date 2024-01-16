@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>slider</title>
+    <style>
+      .slider-container {
+        width: 500px;
+        height: 300px;
+        position: relative;
+        overflow: hidden;
+      }
+      .image-list {
+        display: flex;
+      }
+      .img {
+        width: 500px;
+        height: 300px;
+        flex-shrink: 0;
+      }
+      .indicator-list {
+        position: absolute;
+        padding: 0 20%;
+        box-sizing: border-box;
+        width: 100%;
+        left: 0;
+        bottom: 10px;
+        margin: 0 auto;
+        display: flex;
+      }
+      .indicator {
+        flex: 1;
+        height: 4px;
+        background-color: #fff;
+        margin-left: 10px;
+        cursor: pointer;
+      }
+      .indicator:first-child {
+        margin-left: 0;
+      }
+      .indicator.active {
+        background-color: lightskyblue;
+      }
+      .left-arrow,
+      .right-arrow {
+        cursor: pointer;
+        width: 30px;
+        height: 30px;
+        border-radius: 100%;
+        background-color: red;
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+      }
+      .left-arrow {
+        left: 20px;
+      }
+      .right-arrow {
+        right: 20px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="slider-container">
+      <div class="image-list">
+        <div class="img img-1" style="background-color: antiquewhite"></div>
+        <div class="img img-2" style="background-color: cadetblue"></div>
+        <div class="img img-3" style="background-color: darkgray"></div>
+        <div class="img img-4" style="background-color: brown"></div>
+      </div>
+      <div class="indicator-list">
+        <div class="indicator indicator-1"></div>
+        <div class="indicator indicator-2"></div>
+        <div class="indicator indicator-3"></div>
+        <div class="indicator indicator-4"></div>
+      </div>
+      <div class="left-arrow"></div>
+      <div class="right-arrow"></div>
+    </div>
+  </body>
+  <script>
+    let currentIndex = 0;
+
+    const leftArrow = document.querySelector(".left-arrow");
+    const rightArrow = document.querySelector(".right-arrow");
+    const indicatorList = document.querySelector(".indicator-list");
+    const imageList = document.querySelector(".image-list");
+
+    const len = indicatorList.children.length;
+
+    indicatorList.addEventListener("click", (e) => {
+      const idx = Array.from(indicatorList.children).findIndex(
+        (item) => e.target === item
+      );
+      if (idx !== -1) {
+        moveTo(idx);
+      }
+    });
+
+    leftArrow.addEventListener("click", () => {
+      clickLeft();
+    });
+
+    rightArrow.addEventListener("click", () => {
+      clickRight();
+    });
+
+    init();
+
+    function init() {
+      const firstImage = imageList.firstElementChild.cloneNode();
+      firstImage.style.position = "absolute";
+      firstImage.style.transform = `translate(${len * 100}%)`;
+      const lastImage = imageList.lastElementChild.cloneNode();
+      lastImage.style.position = "absolute";
+      lastImage.style.transform = `translateX(-100%)`;
+      imageList.prepend(lastImage);
+      imageList.append(firstImage);
+      indicatorList.children[0].classList.add("active");
+    }
+
+    function moveTo(index) {
+      imageList.style.transform = `translateX(${-index * 100}%)`;
+      imageList.style.transition = `transform .5s`;
+
+      Array.from(indicatorList.children).forEach((item) => {
+        if (item.classList.contains("active")) {
+          item.classList.remove("active");
+        }
+      });
+      indicatorList.children[index].classList.add("active");
+
+      currentIndex = index;
+    }
+
+    function clickLeft() {
+      if (currentIndex === 0) {
+        imageList.style.transform = `translateX(${-len * 100}%)`;
+        imageList.style.transition = "none";
+        imageList.clientHeight; // 让浏览器强制渲染
+        moveTo(len - 1);
+      } else {
+        moveTo(currentIndex - 1);
+      }
+    }
+
+    function clickRight() {
+      if (currentIndex === len - 1) {
+        imageList.style.transform = `translateX(100%)`;
+        imageList.style.transition = "none";
+        imageList.clientHeight;
+        moveTo(0);
+      } else {
+        moveTo(currentIndex + 1);
+      }
+    }
+  </script>
+</html>
